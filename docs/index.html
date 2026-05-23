@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>StreikWriter — Écriture de livres</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Mono:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0e0e0e;
+  --bg2:#141414;
+  --bg3:#1a1a1a;
+  --green:#3E5C3E;
+  --green2:#5a845a;
+  --green3:#8fbf8f;
+  --text:#e8e4dc;
+  --muted:#6b6560;
+  --border:#2a2a2a;
+  --white:#f5f2ed;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Cormorant Garamond',serif;
+  font-size:18px;
+  line-height:1.7;
+  overflow-x:hidden;
+}
+
+/* ── Grain overlay ── */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:999;opacity:.6;
+}
+
+/* ── Nav ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 48px;
+  background:rgba(14,14,14,.85);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{
+  font-family:'Playfair Display',serif;
+  font-size:22px;font-weight:900;font-style:italic;
+  letter-spacing:-.5px;color:var(--white);
+  text-decoration:none;
+}
+.nav-links{display:flex;gap:32px;list-style:none;}
+.nav-links a{
+  font-family:'DM Mono',monospace;font-size:12px;
+  color:var(--muted);text-decoration:none;letter-spacing:.08em;
+  text-transform:uppercase;transition:color .2s;
+}
+.nav-links a:hover{color:var(--green3);}
+
+/* ── Hero ── */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:120px 24px 80px;
+  position:relative;
+}
+.hero-eyebrow{
+  font-family:'DM Mono',monospace;font-size:11px;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:var(--green3);margin-bottom:28px;
+  display:flex;align-items:center;gap:12px;
+}
+.hero-eyebrow::before,.hero-eyebrow::after{
+  content:'';display:block;width:40px;height:1px;background:var(--green);
+}
+h1{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(64px,10vw,140px);
+  font-weight:900;font-style:italic;
+  line-height:.92;letter-spacing:-.03em;
+  color:var(--white);
+  margin-bottom:8px;
+}
+h1 span{color:var(--green3);}
+.hero-sub{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(18px,2.5vw,26px);font-weight:300;
+  color:var(--muted);margin-top:28px;margin-bottom:56px;
+  max-width:480px;
+}
+.btn-dl{
+  display:inline-flex;align-items:center;gap:12px;
+  background:var(--green);color:var(--white);
+  padding:16px 40px;border-radius:2px;
+  font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.08em;
+  text-transform:uppercase;text-decoration:none;
+  border:1px solid var(--green2);
+  transition:background .25s,transform .2s,box-shadow .25s;
+  position:relative;overflow:hidden;
+}
+.btn-dl::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,transparent 60%);
+}
+.btn-dl:hover{background:var(--green2);transform:translateY(-2px);box-shadow:0 12px 32px rgba(62,92,62,.35);}
+.btn-dl svg{width:18px;height:18px;}
+.hero-version{
+  margin-top:20px;
+  font-family:'DM Mono',monospace;font-size:11px;
+  color:var(--muted);letter-spacing:.05em;
+}
+.hero-version span{color:var(--green3);}
+
+/* ── Divider ── */
+.divider{
+  width:1px;height:80px;
+  background:linear-gradient(to bottom,transparent,var(--border),transparent);
+  margin:0 auto;
+}
+
+/* ── Features ── */
+section{padding:100px 24px;}
+.section-label{
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--green3);margin-bottom:16px;
+}
+.section-title{
+  font-family:'Playfair Display',serif;font-size:clamp(36px,5vw,64px);
+  font-weight:700;font-style:italic;line-height:1.1;
+  color:var(--white);margin-bottom:64px;
+}
+.features-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:1px;background:var(--border);
+  max-width:1100px;margin:0 auto;
+  border:1px solid var(--border);
+}
+.feature{
+  background:var(--bg2);padding:40px 36px;
+  transition:background .2s;
+}
+.feature:hover{background:var(--bg3);}
+.feature-icon{font-size:28px;margin-bottom:20px;}
+.feature-title{
+  font-family:'Playfair Display',serif;font-size:20px;
+  font-weight:700;color:var(--white);margin-bottom:10px;
+}
+.feature-desc{
+  font-family:'Cormorant Garamond',serif;font-size:16px;
+  color:var(--muted);line-height:1.6;
+}
+
+/* ── Screenshot mockup ── */
+.mockup-section{
+  max-width:1100px;margin:0 auto;padding:80px 24px;
+  display:flex;align-items:center;gap:80px;
+}
+.mockup-text{flex:1;}
+.mockup-text p{
+  font-size:18px;color:var(--muted);font-weight:300;
+  margin-bottom:24px;font-style:italic;
+}
+.mockup-window{
+  flex:1.2;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:4px;overflow:hidden;
+  box-shadow:0 32px 80px rgba(0,0,0,.6);
+}
+.mockup-bar{
+  background:#1a1a1a;border-bottom:1px solid #3E5C3E;
+  padding:10px 16px;display:flex;align-items:center;gap:8px;
+}
+.dot{width:10px;height:10px;border-radius:50%;}
+.dot.r{background:#555;}
+.dot.y{background:#555;}
+.dot.g{background:#3E5C3E;}
+.mockup-toolbar{
+  background:#1A1A1A;border-bottom:1px solid #2a2a2a;
+  padding:6px 12px;display:flex;gap:8px;align-items:center;
+  font-family:'DM Mono',monospace;font-size:11px;color:#555;
+}
+.tb-sep{width:1px;height:18px;background:#2a2a2a;}
+.tb-btn{
+  padding:3px 8px;background:#232323;border:1px solid #2a2a2a;
+  border-radius:2px;color:#888;font-size:11px;cursor:default;
+}
+.mockup-body{
+  display:flex;background:#2a2a2a;min-height:240px;
+}
+.mockup-sidebar{
+  width:180px;background:#1a1a1a;border-right:1px solid #2a2a2a;
+  padding:16px 12px;
+  font-family:'DM Mono',monospace;font-size:10px;color:#444;
+}
+.mockup-sidebar div{padding:4px 6px;margin-bottom:2px;}
+.mockup-sidebar .active{background:#3E5C3E;color:#fff;border-radius:2px;}
+.mockup-page{
+  flex:1;display:flex;justify-content:center;align-items:flex-start;
+  padding:20px;
+}
+.mockup-sheet{
+  width:100%;max-width:300px;background:#fff;
+  padding:24px;box-shadow:0 4px 24px rgba(0,0,0,.4);
+  min-height:200px;
+}
+.mockup-line{height:9px;background:#e0ddd8;border-radius:2px;margin-bottom:8px;}
+.mockup-line.short{width:60%;}
+.mockup-line.title{height:14px;background:#c8c4bc;width:75%;margin-bottom:16px;}
+
+/* ── Download / Versions ── */
+#telecharger{background:var(--bg2);}
+.dl-card{
+  max-width:700px;margin:0 auto;
+  background:var(--bg3);border:1px solid var(--border);
+  padding:48px;text-align:center;
+}
+.dl-card h3{
+  font-family:'Playfair Display',serif;font-size:32px;
+  font-weight:700;font-style:italic;color:var(--white);margin-bottom:8px;
+}
+.dl-card .ver-tag{
+  display:inline-block;
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;
+  background:var(--green);color:#fff;padding:4px 12px;border-radius:1px;
+  margin-bottom:28px;
+}
+.dl-card p{color:var(--muted);font-size:16px;margin-bottom:36px;font-style:italic;}
+.dl-meta{
+  display:flex;justify-content:center;gap:32px;margin-top:24px;
+  font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);
+}
+.dl-meta span{display:flex;align-items:center;gap:6px;}
+
+/* ── Versions table ── */
+#versions{padding:100px 24px;}
+.versions-wrap{max-width:900px;margin:0 auto;}
+.v-table{width:100%;border-collapse:collapse;margin-top:48px;}
+.v-table th{
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);
+  text-align:left;padding:12px 20px;
+  border-bottom:1px solid var(--border);
+}
+.v-table td{
+  padding:18px 20px;border-bottom:1px solid var(--border);
+  font-family:'Cormorant Garamond',serif;font-size:17px;
+  vertical-align:middle;
+}
+.v-table tr:hover td{background:var(--bg2);}
+.v-badge{
+  display:inline-block;
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;
+  padding:3px 8px;border-radius:1px;
+}
+.v-badge.latest{background:var(--green);color:#fff;}
+.v-badge.stable{background:#2a2a2a;color:var(--muted);border:1px solid var(--border);}
+.v-badge.beta{background:#3a3020;color:#c8a840;border:1px solid #5a4820;}
+.v-dl-link{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.05em;
+  color:var(--green3);text-decoration:none;
+  transition:color .2s;
+}
+.v-dl-link:hover{color:var(--white);}
+.v-notes{color:var(--muted);font-size:15px;font-style:italic;}
+.gh-link{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.06em;
+  color:var(--muted);text-decoration:none;margin-top:32px;
+  border:1px solid var(--border);padding:10px 20px;border-radius:2px;
+  transition:color .2s,border-color .2s;
+}
+.gh-link:hover{color:var(--white);border-color:var(--green);}
+.gh-link svg{width:16px;height:16px;}
+
+/* ── Footer ── */
+footer{
+  border-top:1px solid var(--border);
+  padding:48px 48px;
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);
+  letter-spacing:.06em;
+}
+footer a{color:var(--muted);text-decoration:none;}
+footer a:hover{color:var(--green3);}
+
+/* ── Loading state ── */
+.loading-row td{color:var(--muted);font-style:italic;font-size:15px;}
+
+/* ── Animations ── */
+.fade-in{opacity:0;transform:translateY(24px);animation:fadein .7s forwards;}
+@keyframes fadein{to{opacity:1;transform:none;}}
+.fade-in:nth-child(1){animation-delay:.1s;}
+.fade-in:nth-child(2){animation-delay:.2s;}
+.fade-in:nth-child(3){animation-delay:.3s;}
+.fade-in:nth-child(4){animation-delay:.4s;}
+.fade-in:nth-child(5){animation-delay:.5s;}
+.fade-in:nth-child(6){animation-delay:.6s;}
+
+@media(max-width:768px){
+  nav{padding:16px 20px;}
+  .nav-links{display:none;}
+  .mockup-section{flex-direction:column;gap:40px;}
+  footer{flex-direction:column;gap:16px;text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#">StreikWriter</a>
+  <ul class="nav-links">
+    <li><a href="#fonctionnalites">Fonctionnalités</a></li>
+    <li><a href="#telecharger">Télécharger</a></li>
+    <li><a href="#versions">Versions</a></li>
+    <li><a href="https://github.com/TON_USERNAME/StreikWriter" target="_blank">GitHub</a></li>
+  </ul>
+</nav>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="hero-eyebrow">Application d'écriture</div>
+  <h1>Streik<br/><span>Writer</span></h1>
+  <p class="hero-sub">Écrire un roman, une pièce, un recueil — enfin un outil à la hauteur.</p>
+  <a class="btn-dl" href="#" id="hero-dl-btn">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+    </svg>
+    Télécharger pour Windows
+  </a>
+  <p class="hero-version">Version <span id="hero-version-tag">—</span> · Gratuit · Windows 10/11</p>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── Fonctionnalités ── -->
+<section id="fonctionnalites" style="max-width:1100px;margin:0 auto;">
+  <div class="section-label">Ce qu'il fait</div>
+  <div class="section-title">Un éditeur pensé<br/>pour les auteurs.</div>
+  <div class="features-grid">
+    <div class="feature fade-in">
+      <div class="feature-icon">📄</div>
+      <div class="feature-title">Format .strk</div>
+      <div class="feature-desc">Format natif compact. Tout le projet dans un seul fichier.</div>
+    </div>
+    <div class="feature fade-in">
+      <div class="feature-icon">🖋</div>
+      <div class="feature-title">Mise en page réelle</div>
+      <div class="feature-desc">La feuille blanche affichée aux vraies dimensions A4/A5/Letter avec marges personnalisables.</div>
+    </div>
+    <div class="feature fade-in">
+      <div class="feature-icon">📤</div>
+      <div class="feature-title">Export PDF & EPUB</div>
+      <div class="feature-desc">Un clic pour exporter. Titre et auteur inclus automatiquement.</div>
+    </div>
+    <div class="feature fade-in">
+      <div class="feature-icon">🎮</div>
+      <div class="feature-title">Discord Rich Presence</div>
+      <div class="feature-desc">Affiche le titre, l'auteur et le genre en temps réel sur ton profil Discord.</div>
+    </div>
+    <div class="feature fade-in">
+      <div class="feature-icon">🔤</div>
+      <div class="feature-title">Typographie libre</div>
+      <div class="feature-desc">Choix de police, taille, couleur, surlignage — y compris sur du texte déjà écrit.</div>
+    </div>
+    <div class="feature fade-in">
+      <div class="feature-icon">🔄</div>
+      <div class="feature-title">Mises à jour auto</div>
+      <div class="feature-desc">L'app vérifie et installe les mises à jour sans rien télécharger manuellement.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Mockup ── -->
+<div class="mockup-section">
+  <div class="mockup-text">
+    <div class="section-label">L'interface</div>
+    <div class="section-title" style="font-size:clamp(28px,4vw,48px);">Sombre dehors,<br/>blanc dedans.</div>
+    <p>L'interface reste discrète pour que la page reste le centre. Fond <code style="font-family:'DM Mono',monospace;font-size:13px;color:var(--green3);">#1A1A1A</code>, accents <code style="font-family:'DM Mono',monospace;font-size:13px;color:var(--green3);">#3E5C3E</code>.</p>
+  </div>
+  <div class="mockup-window">
+    <div class="mockup-bar">
+      <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+      <span style="font-family:'DM Mono',monospace;font-size:10px;color:#444;margin-left:12px;">StreikWriter — Mon Roman [roman.strk]</span>
+    </div>
+    <div class="mockup-toolbar">
+      <span class="tb-btn">Georgia</span>
+      <span class="tb-btn">14</span>
+      <div class="tb-sep"></div>
+      <span class="tb-btn" style="font-weight:bold;">𝐁</span>
+      <span class="tb-btn" style="font-style:italic;">𝐼</span>
+      <span class="tb-btn">U̲</span>
+      <div class="tb-sep"></div>
+      <span class="tb-btn" style="color:#3E5C3E;">A</span>
+      <span class="tb-btn" style="background:#FFE066;color:#1a1a1a;">HL</span>
+    </div>
+    <div class="mockup-body">
+      <div class="mockup-sidebar">
+        <div style="color:#3E5C3E;margin-bottom:12px;font-size:10px;">PROJET</div>
+        <div class="active">Mon Roman</div>
+        <div style="margin-top:16px;color:#3a3a3a;">Roman · A4</div>
+        <div style="color:#3a3a3a;">1 247 mots</div>
+      </div>
+      <div class="mockup-page">
+        <div class="mockup-sheet">
+          <div class="mockup-line title"></div>
+          <div class="mockup-line"></div>
+          <div class="mockup-line"></div>
+          <div class="mockup-line short"></div>
+          <div class="mockup-line" style="margin-top:16px;"></div>
+          <div class="mockup-line"></div>
+          <div class="mockup-line short"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Télécharger ── -->
+<section id="telecharger">
+  <div style="max-width:700px;margin:0 auto;text-align:center;padding:0 24px;">
+    <div class="section-label">Installation</div>
+    <div class="section-title">Télécharger<br/>StreikWriter</div>
+    <div class="dl-card">
+      <div class="ver-tag" id="dl-version-tag">Chargement…</div>
+      <h3 id="dl-version-name">Dernière version</h3>
+      <p id="dl-version-date">Vérification en cours…</p>
+      <a class="btn-dl" href="#" id="dl-btn" style="display:inline-flex;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:18px;height:18px;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+        </svg>
+        Télécharger .exe
+      </a>
+      <div class="dl-meta">
+        <span>🪟 Windows 10/11</span>
+        <span>⚡ Gratuit</span>
+        <span>🔒 Pas d'admin requis</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Historique des versions ── -->
+<section id="versions">
+  <div class="versions-wrap">
+    <div class="section-label">Historique</div>
+    <div class="section-title">Toutes les versions</div>
+    <table class="v-table">
+      <thead>
+        <tr>
+          <th>Version</th>
+          <th>Date</th>
+          <th>Notes</th>
+          <th>Télécharger</th>
+        </tr>
+      </thead>
+      <tbody id="releases-body">
+        <tr class="loading-row"><td colspan="4">Chargement des versions depuis GitHub…</td></tr>
+      </tbody>
+    </table>
+    <a class="gh-link" href="https://github.com/TON_USERNAME/StreikWriter/releases" target="_blank">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+      </svg>
+      Voir toutes les releases sur GitHub
+    </a>
+  </div>
+</section>
+
+<footer>
+  <span>© 2026 Streik — StreikWriter est gratuit et open source.</span>
+  <span>
+    <a href="https://github.com/TON_USERNAME/StreikWriter" target="_blank">GitHub</a>
+    &nbsp;·&nbsp;
+    <a href="https://github.com/TON_USERNAME/StreikWriter/blob/main/installer/license.txt" target="_blank">Licence</a>
+  </span>
+</footer>
+
+<script>
+// ── Config — remplace TON_USERNAME ──
+const GITHUB_REPO = "Streikavierik/StreikWriter";
+const API = `https://api.github.com/repos/${GITHUB_REPO}/releases`;
+
+function fmtDate(iso){
+  const d = new Date(iso);
+  return d.toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
+}
+
+function exeAsset(release){
+  return (release.assets||[]).find(a=>a.name.endsWith(".exe"));
+}
+
+async function loadReleases(){
+  try{
+    const res = await fetch(API);
+    if(!res.ok) throw new Error("GitHub API error");
+    const releases = await res.json();
+    if(!releases.length) throw new Error("Aucune release");
+
+    const latest = releases[0];
+    const asset  = exeAsset(latest);
+    const ver    = latest.tag_name.replace(/^v/,"");
+
+    // Hero
+    document.getElementById("hero-version-tag").textContent = ver;
+    if(asset) document.getElementById("hero-dl-btn").href = asset.browser_download_url;
+
+    // Dl card
+    document.getElementById("dl-version-tag").textContent  = latest.tag_name;
+    document.getElementById("dl-version-name").textContent = latest.name || `StreikWriter ${latest.tag_name}`;
+    document.getElementById("dl-version-date").textContent = `Publié le ${fmtDate(latest.published_at)}`;
+    if(asset) document.getElementById("dl-btn").href = asset.browser_download_url;
+
+    // Table
+    const tbody = document.getElementById("releases-body");
+    tbody.innerHTML = "";
+    releases.forEach((r,i)=>{
+      const a = exeAsset(r);
+      const isLatest = i===0;
+      const prerel   = r.prerelease;
+      const badge    = isLatest
+        ? `<span class="v-badge latest">Dernière</span>`
+        : prerel
+          ? `<span class="v-badge beta">Bêta</span>`
+          : `<span class="v-badge stable">Stable</span>`;
+      const dlLink = a
+        ? `<a class="v-dl-link" href="${a.browser_download_url}">
+             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+               <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+             </svg>
+             ${a.name}
+           </a>`
+        : `<span style="color:var(--muted);font-size:13px;font-family:'DM Mono',monospace;">Pas de fichier</span>`;
+      const notes = r.body
+        ? r.body.split("\n").slice(0,2).join(" ").substring(0,80)+"…"
+        : "—";
+      tbody.innerHTML += `<tr>
+        <td><strong style="font-family:'DM Mono',monospace;font-size:14px;color:var(--white);">${r.tag_name}</strong>&nbsp; ${badge}</td>
+        <td style="color:var(--muted);font-size:14px;font-family:'DM Mono',monospace;">${fmtDate(r.published_at)}</td>
+        <td class="v-notes">${notes}</td>
+        <td>${dlLink}</td>
+      </tr>`;
+    });
+  } catch(e){
+    document.getElementById("releases-body").innerHTML =
+      `<tr class="loading-row"><td colspan="4">Impossible de charger les versions. <a href="https://github.com/${GITHUB_REPO}/releases" style="color:var(--green3);">Voir sur GitHub →</a></td></tr>`;
+    document.getElementById("dl-version-tag").textContent  = "v2.0.0";
+    document.getElementById("dl-version-name").textContent = "StreikWriter";
+    document.getElementById("dl-version-date").textContent = "Voir GitHub pour les releases";
+    document.getElementById("hero-version-tag").textContent = "2.0.0";
+  }
+}
+
+loadReleases();
+</script>
+</body>
+</html>
